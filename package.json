@@ -1,0 +1,29 @@
+{
+  "name": "deploy-loancontract",
+  "version": "1.0.0",
+  "description": "deploy smart contract to the blockchain",
+  "main": "handler.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha **/*.spec.js",
+    "run": "SLS_DEBUG=* serverless invoke local --function deployContract"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CognitoChain/deploy-loancontract.git"
+  },
+  "author": "srinivas anala",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CognitoChain/deploy-loancontract/issues"
+  },
+  "homepage": "https://github.com/CognitoChain/deploy-loancontract#readme",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.2.2"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.595.0",
+    "solc": "^0.6.0",
+    "web3": "^1.2.4"
+  }
+}
