@@ -22,7 +22,7 @@ contract loan {
     }
     Status public status;
 
-    function init(uint256 principle , uint256 totalDue ) payable public returns (bool done) {
+    function init(uint256 principle ,uint256 totalDue ) payable public returns (bool done) {
         principalAmount = principle;
         TotalRepaymentDue = totalDue;
         status = Status.ACTIVE;
@@ -40,7 +40,7 @@ contract loan {
         return totalRepaid;
     }
 
-    function getRemainingbalance() payable public returns (uint256 _totalDue) {
+    function getRemainingbalance() public view returns (uint256 _totalDue) {
         require(principalAmount > 0);
         require(TotalRepaymentDue > 0);
         return (TotalRepaymentDue - totalRepaid);
