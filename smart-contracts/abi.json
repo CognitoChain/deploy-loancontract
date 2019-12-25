@@ -1,54 +1,39 @@
 [
 	{
-		"constant": true,
-		"inputs": [],
-		"name": "status",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint8"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "getTotalRepaid",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
 		"inputs": [],
 		"name": "getRemainingbalance",
 		"outputs": [
 			{
+				"internalType": "uint256",
 				"name": "_totalDue",
 				"type": "uint256"
 			}
 		],
-		"payable": false,
 		"stateMutability": "view",
 		"type": "function"
 	},
 	{
-		"constant": false,
+		"inputs": [],
+		"name": "getTotalRepaid",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [
 			{
+				"internalType": "uint256",
 				"name": "principle",
 				"type": "uint256"
 			},
 			{
+				"internalType": "uint256",
 				"name": "totalDue",
 				"type": "uint256"
 			}
@@ -56,18 +41,18 @@
 		"name": "init",
 		"outputs": [
 			{
+				"internalType": "bool",
 				"name": "done",
 				"type": "bool"
 			}
 		],
-		"payable": true,
 		"stateMutability": "payable",
 		"type": "function"
 	},
 	{
-		"constant": false,
 		"inputs": [
 			{
+				"internalType": "uint256",
 				"name": "amount",
 				"type": "uint256"
 			}
@@ -75,11 +60,11 @@
 		"name": "makeRepayment",
 		"outputs": [
 			{
+				"internalType": "uint256",
 				"name": "_totalRepaid",
 				"type": "uint256"
 			}
 		],
-		"payable": true,
 		"stateMutability": "payable",
 		"type": "function"
 	},
@@ -88,16 +73,31 @@
 		"inputs": [
 			{
 				"indexed": false,
+				"internalType": "uint256",
 				"name": "amount",
 				"type": "uint256"
 			},
 			{
 				"indexed": false,
+				"internalType": "address",
 				"name": "contract_creator",
 				"type": "address"
 			}
 		],
 		"name": "RepaymentEvent",
 		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "status",
+		"outputs": [
+			{
+				"internalType": "enum loan.Status",
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
 	}
 ]
