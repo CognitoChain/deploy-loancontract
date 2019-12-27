@@ -1,12 +1,24 @@
 pragma solidity ^0.6.0;
 
 contract loan {
-    address creator = msg.sender;
-    uint256 totalRepaid = 0;
+    uint256 totalRepaid;
     uint256 principalAmount;
     uint256 TotalRepaymentDue;
+    enum Status {
+        ACTIVE,
+        CLOSED,
+        DEFAULT,
+        DEACTIVATED
+    }
+    Status status;
+    constructor(uint256 principal,uint256 totalDue  ) public {
+        totalRepaid = 0;
+        principalAmount = principal;
+        TotalRepaymentDue = totalDue;
+        status = Status.ACTIVE;
+    }
 
-    function getTotalRepaid() public view returns(uint256) {
+    function getTotalRepaid() public view returns(uint256 ) {
         return totalRepaid;
     }
 
@@ -14,26 +26,15 @@ contract loan {
         uint256 amount,
         address contract_creator
     );
-    enum Status {
-        ACTIVE,
-        CLOSED,
-        DEFAULT,
-        DEACTIVATED
-    }
-    Status public status;
-
-    function init(uint256 principle ,uint256 totalDue ) payable public returns (bool done) {
-        principalAmount = principle;
-        TotalRepaymentDue = totalDue;
-        status = Status.ACTIVE;
-        return true;
+    function getStatus() public view returns (Status) {
+        return status;
     }
 
-    function makeRepayment(uint256 amount) payable public returns (uint256 _totalRepaid) {
-        require(principalAmount > 0);
-        require(TotalRepaymentDue > 0);
+    function makeRepayment(uint256 amount) public payable  returns (uint256 _totalRepaid) {
+        require(TotalRepaymentDue > 0,'TotalRepaymentDue should be more than 0');
+        require(status == Status.ACTIVE, 'Loan status should be Active for making payments');
         totalRepaid = totalRepaid + amount;
-        emit RepaymentEvent(amount, msg.sender);
+        emit RepaymentEvent(amount, address(this));
         if ( totalRepaid >= TotalRepaymentDue) {
                 status = Status.CLOSED;
             }
@@ -41,8 +42,7 @@ contract loan {
     }
 
     function getRemainingbalance() public view returns (uint256 _totalDue) {
-        require(principalAmount > 0);
-        require(TotalRepaymentDue > 0);
+        require(TotalRepaymentDue > 0, 'TotalRepaymentDue should be more than 0');
         return (TotalRepaymentDue - totalRepaid);
     }
 }
