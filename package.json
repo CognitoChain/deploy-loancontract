@@ -23,7 +23,6 @@
   },
   "dependencies": {
     "aws-sdk": "^2.595.0",
-    "ethereumjs-tx": "^2.1.2",
     "solc": "^0.6.0",
     "web3": "^1.2.4"
   }
