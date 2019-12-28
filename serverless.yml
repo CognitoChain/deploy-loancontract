@@ -43,27 +43,6 @@ provider:
       Resource: 
         - "*"
 
-resources:
-  Resources:
-    LoanDynamoDbTable:
-      Type: 'AWS::DynamoDB::Table'
-      DeletionPolicy: Retain
-      Properties:
-        AttributeDefinitions:
-          -
-            AttributeName: "loanID"
-            AttributeType: "S"   
-        KeySchema:
-          -
-            AttributeName: "loanID"
-            KeyType: "HASH"
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
-        StreamSpecification:
-          StreamViewType: "NEW_AND_OLD_IMAGES"
-        TableName: ${self:provider.environment.LOAN_TABLE}
-
 functions:
   deployContract:
     handler: handler.deployContract
