@@ -6,6 +6,10 @@ const S3 = new AWS.S3()
 var fs = require("fs")
 
 
+AWS.config.setPromisesDependency(require('bluebird'));
+
+const dynamoDb = new AWS.DynamoDB.DocumentClient();
+
 module.exports.deployContract = (event, context, callback) => {
 
   try{
@@ -14,6 +18,9 @@ module.exports.deployContract = (event, context, callback) => {
       if (record.eventName == 'INSERT') {
             const loanID = JSON.stringify(record.dynamodb.NewImage.loanID.S);
             const loanAmount = JSON.stringify(record.dynamodb.NewImage.amount.N);
+            console.log(loanID)
+            console.log(loanAmount)
+            console.log(parseInt(loanAmount))
             deployContract(loanID,parseInt(loanAmount))
       }
     })
@@ -21,7 +28,6 @@ module.exports.deployContract = (event, context, callback) => {
   catch(e){
     console.log(e)
   }
-
     return {
         statusCode: 200,
         body: JSON.stringify({
@@ -90,5 +96,19 @@ async function deployContract(loanID,amount) {
 
     console.info(receipt)
 
-    context.done(null, 'contract deployed') // SUCCESS with message
+  const putContractAddress = {
+    Item: {
+      'key': {
+        S: loanID
+      },
+      'contract': {
+        S: receipt.contractAddress
+      }
+    },
+    ReturnConsumedCapacity: 'TOTAL',
+    TableName: 'cognitochain-api-dev'
+  }
+  await dynamoDb.putItem(putContractAddress).promise()
+
+  context.done(null, 'contract deployed') // SUCCESS with message
 }
