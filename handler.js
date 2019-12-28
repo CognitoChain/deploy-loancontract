@@ -7,6 +7,11 @@ var fs = require("fs")
 
 
 module.exports.deployContract = (event, context, callback) => {
+
+  event.Records.forEach((record) => {
+    console.log('Stream record: ', JSON.stringify(record, null, 2));
+  })
+  
     var result = deployContract(context)
     return {
         statusCode: 200,
