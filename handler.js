@@ -17,7 +17,6 @@ module.exports.deployContract = (event, context, callback) => {
     console.log(e)
   }
 
-    var result = deployContract(context)
     return {
         statusCode: 200,
         body: JSON.stringify({
