@@ -16,12 +16,13 @@ module.exports.deployContract = (event, context, callback) => {
     event.Records.forEach((record) => {
       console.log('Stream record: ', JSON.stringify(record, null, 2));
       if (record.eventName == 'INSERT') {
-            const loanID = JSON.stringify(record.dynamodb.NewImage.loanID.S);
-            const loanAmount = JSON.stringify(record.dynamodb.NewImage.amount.N);
+          const unmarshalleddata = AWS.DynamoDB.Converter.unmarshall(record.dynamodb.NewImage);
+
+            const loanID = JSON.stringify(unmarshalleddata.loanID.S);
+            const loanAmount = unmarshalleddata.amount.N;
             console.log(loanID)
             console.log(loanAmount)
-            console.log(parseInt(loanAmount))
-            deployContract(loanID,parseInt(loanAmount))
+            deployContract(loanID,loanAmount)
       }
     })
   }
