@@ -11,6 +11,11 @@ module.exports.deployContract = (event, context, callback) => {
   try{
     event.Records.forEach((record) => {
       console.log('Stream record: ', JSON.stringify(record, null, 2));
+      if (record.eventName == 'INSERT') {
+            const loanID = JSON.stringify(record.dynamodb.NewImage.loanID.S);
+            const loanAmount = JSON.stringify(record.dynamodb.NewImage.amount.N);
+            deployContract(loanID,parseInt(loanAmount))
+      }
     })
   }
   catch(e){
@@ -31,7 +36,7 @@ module.exports.deployContract = (event, context, callback) => {
 };
 
 
-async function deployContract(context) {
+async function deployContract(loanID,amount) {
 
 
     var web3 = new Web3(new Web3.providers.HttpProvider('https://block.cognitochain.io'))
@@ -60,7 +65,7 @@ async function deployContract(context) {
     var contract = new web3.eth.Contract(compiledCode.contracts['loan'].loan.abi);
     const hexdata = contract.deploy({
         data: '0x' + byteCode,
-        arguments: [25000,"181905104014713"]
+        arguments: [amount,loanID]
     }).encodeABI()
 
 
