@@ -51,7 +51,7 @@ async function deployContract(context) {
     var contract = new web3.eth.Contract(compiledCode.contracts['loan'].loan.abi);
     const hexdata = contract.deploy({
         data: '0x' + byteCode,
-        arguments: [25000, (25000*1.125)]
+        arguments: [25000,"181905104014713"]
     }).encodeABI()
 
 
