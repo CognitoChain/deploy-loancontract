@@ -52,4 +52,7 @@ functions:
           path: deploy-contract
           method: post
           cors: true
-      - stream: arn:aws:dynamodb:ap-south-1:529566628646:table/loan-info-dev/stream/2019-12-29T02:08:57.253
+      - stream: 
+        arn:aws:dynamodb:ap-south-1:529566628646:table/loan-info-dev/stream/2019-12-29T02:08:57.253
+        maximumRetryAttempts: 2
+        startingPosition: LATEST
