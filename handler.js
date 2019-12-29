@@ -15,13 +15,16 @@ module.exports.deployContract = (event, context, callback) => {
   try{
     event.Records.forEach((record) => {
       console.log('Stream record: ', JSON.stringify(record, null, 2));
+      // var record = JSON.parse(fs.readFileSync('./mocks/dynamo-mock.json', 'utf8'))
+      // console.log(record)
       if (record.eventName == 'INSERT') {
-          const unmarshalleddata = AWS.DynamoDB.Converter.unmarshall(record.dynamodb.NewImage)
-            const loanID = unmarshalleddata.loanID.S
-            const loanAmount = unmarshalleddata.amount.N
-            console.log(loanID)
-            console.log(loanAmount)
-            deployContract(loanID,loanAmount)
+          const unmarshalledData = AWS.DynamoDB.Converter.unmarshall(record.dynamodb.NewImage)
+          console.log(unmarshalledData.contractAddress)
+          if(unmarshalledData.contractAddress === undefined){
+            deployContract(unmarshalledData)
+          }else{
+            console.warn(`Contract already exists for the loan :${unmarshalledData.loanID} `)
+          }
       }
     })
   }
@@ -42,7 +45,7 @@ module.exports.deployContract = (event, context, callback) => {
 };
 
 
-async function deployContract(loanID,amount) {
+async function deployContract(loanInfo) {
 
 
     var web3 = new Web3(new Web3.providers.HttpProvider('https://block.cognitochain.io'))
@@ -71,7 +74,7 @@ async function deployContract(loanID,amount) {
     var contract = new web3.eth.Contract(compiledCode.contracts['loan'].loan.abi);
     const hexdata = contract.deploy({
         data: '0x' + byteCode,
-        arguments: [amount,loanID]
+        arguments: [loanInfo.amount,loanInfo.loanID]
     }).encodeABI()
 
 
@@ -96,19 +99,23 @@ async function deployContract(loanID,amount) {
 
     console.info(receipt)
 
+
+  var item = {
+    loanID: loanInfo.loanID,
+    amount: loanInfo.amount,
+    shgID: loanInfo.shgID,
+    disbursementDate: loanInfo.disbursementDate,
+    demandGenerationData: loanInfo.demandGenerationData,
+    memberID: loanInfo.memberID,
+    contractAddress: receipt.contractAddress
+  }
+
   const putContractAddress = {
-    Item: {
-      'key': {
-        S: loanID
-      },
-      'contract': {
-        S: receipt.contractAddress
-      }
-    },
+    Item: item,
     ReturnConsumedCapacity: 'TOTAL',
     TableName: 'loan-info-dev'
   }
-  await dynamoDb.putItem(putContractAddress).promise()
+  
+  await dynamoDb.put(putContractAddress).promise()
 
-  context.done(null, 'contract deployed') // SUCCESS with message
 }

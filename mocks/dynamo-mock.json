@@ -1,0 +1,39 @@
+{
+    "eventID": "4afe3a7b2c9312fbdf183609d5296ce0",
+    "eventName": "INSERT",
+    "eventVersion": "1.1",
+    "eventSource": "aws:dynamodb",
+    "awsRegion": "ap-south-1",
+    "dynamodb": {
+        "ApproximateCreationDateTime": 1577587523,
+        "Keys": {
+            "loanID": {
+                "S": "18190102400749"
+            }
+        },
+        "NewImage": {
+            "amount": {
+                "N": "25625"
+            },
+            "shgID": {
+                "S": "20102080230101004"
+            },
+            "disbursementDate": {
+                "S": "3/30/2019 12:00:00 AM"
+            },
+            "demandGenerationData": {
+                "S": "5/9/2019 12:00:00 AM"
+            },
+            "loanID": {
+                "S": "18190102400749"
+            },
+            "memberID": {
+                "S": "2010208023010100500"
+            }
+        },
+        "SequenceNumber": "100000000006205703624",
+        "SizeBytes": 176,
+        "StreamViewType": "NEW_AND_OLD_IMAGES"
+    },
+    "eventSourceARN": "arn:aws:dynamodb:ap-south-1:529566628646:table/loan-info-dev/stream/2019-12-29T02:08:57.253"
+}
