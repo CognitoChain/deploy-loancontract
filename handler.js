@@ -12,21 +12,22 @@ const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
 module.exports.deployContract = (event, context, callback) => {
 
+  var blockCounter = 0;
   try{
     event.Records.forEach((record) => {
       console.log('Stream record: ', JSON.stringify(record, null, 2));
       // var record = JSON.parse(fs.readFileSync('./mocks/dynamo-mock.json', 'utf8'))
-      // console.log(record)
       if (record.eventName == 'INSERT') {
           const unmarshalledData = AWS.DynamoDB.Converter.unmarshall(record.dynamodb.NewImage)
           console.log(unmarshalledData.contractAddress)
           if(unmarshalledData.contractAddress === undefined){
-            deployContract(unmarshalledData)
+            deployContract(unmarshalledData,blockCounter)
+            blockCounter++
           }else{
             console.warn(`Contract already exists for the loan :${unmarshalledData.loanID} `)
           }
       }
-    })
+   })
   }
   catch(e){
     console.log(e)
@@ -45,7 +46,7 @@ module.exports.deployContract = (event, context, callback) => {
 };
 
 
-async function deployContract(loanInfo) {
+async function deployContract(loanInfo,blockCounter) {
 
 
     var web3 = new Web3(new Web3.providers.HttpProvider('https://block.cognitochain.io'))
@@ -84,7 +85,7 @@ async function deployContract(loanInfo) {
 
     const tx = {
         chainId: 15092020,
-        nonce: await web3.utils.toHex(await web3.eth.getTransactionCount(contractOwner)),
+        nonce: await web3.utils.toHex((await web3.eth.getTransactionCount(contractOwner))+blockCounter),
         gas: web3.utils.toHex(7000000),
         from: contractOwner,
         data: hexdata
