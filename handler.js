@@ -106,7 +106,7 @@ async function deployContract(loanID,amount) {
       }
     },
     ReturnConsumedCapacity: 'TOTAL',
-    TableName: 'cognitochain-api-dev'
+    TableName: 'loan-info-dev'
   }
   await dynamoDb.putItem(putContractAddress).promise()
 
