@@ -117,6 +117,7 @@ async function deployContract(loanInfo,blockCounter) {
     TableName: 'loan-info-dev'
   }
   
-  await dynamoDb.put(putContractAddress).promise()
+  const result = await dynamoDb.put(putContractAddress).promise()
 
+  console.log(result);
 }
