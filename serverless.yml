@@ -47,6 +47,7 @@ provider:
 functions:
   deployContract:
     handler: handler.deployContract
+    timeout: 45
      # The `events` block defines how to trigger the handler.helloWorld code
     events:
       - http:
