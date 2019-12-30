@@ -100,19 +100,10 @@ async function deployContract(loanInfo,blockCounter) {
 
     console.info(receipt)
 
-
-  var item = {
-    loanID: loanInfo.loanID,
-    amount: loanInfo.amount,
-    shgID: loanInfo.shgID,
-    disbursementDate: loanInfo.disbursementDate,
-    demandGenerationData: loanInfo.demandGenerationData,
-    memberID: loanInfo.memberID,
-    contractAddress: receipt.contractAddress
-  }
+  loanInfo.contractAddres = receipt.contractAddress
 
   const putContractAddress = {
-    Item: item,
+    Item: loanInfo,
     ReturnConsumedCapacity: 'TOTAL',
     TableName: 'loan-info-dev'
   }
