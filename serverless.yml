@@ -36,6 +36,7 @@ provider:
         - dynamodb:Scan
         - dynamodb:GetItem
         - dynamodb:PutItem
+        - dynamodb:Put
         - dynamodb:DescribeStream
         - dynamodb:GetRecords
         - dynamodb:GetShardIterator
