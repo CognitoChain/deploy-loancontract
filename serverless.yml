@@ -56,6 +56,6 @@ functions:
           enabled: true
           type: dynamodb
           arn: 
-            Fn::GetAtt: [ LoanDynamoDbTable, StreamArn ]
+          'Fn::ImportValue': loan-table-stream-arn
           maximumRetryAttempts: 2
           startingPosition: LATEST
