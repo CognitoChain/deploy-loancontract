@@ -55,6 +55,7 @@ functions:
       - stream:
           enabled: true
           type: dynamodb
-          arn: arn:aws:dynamodb:ap-south-1:529566628646:table/loan-info-dev/stream/2019-12-29T02:08:57.253
+          arn: 
+            Fn::GetAtt: [ loan-info-dev, StreamArn ]
           maximumRetryAttempts: 2
           startingPosition: LATEST
