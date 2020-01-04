@@ -41,8 +41,10 @@ provider:
         - dynamodb:GetRecords
         - dynamodb:GetShardIterator
         - dynamodb:ListStreams
+        - ssm:GetParameter
       Resource: 
         - "*"
+        - "arn:aws:ssm:*:*:parameter/*"
 
 functions:
   deployContract:

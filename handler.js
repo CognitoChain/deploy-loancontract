@@ -4,6 +4,8 @@ var solc = require('solc')
 var AWS = require('aws-sdk')
 const S3 = new AWS.S3()
 var fs = require("fs")
+const awsParamStore = require( 'aws-param-store' );
+const region = { region: 'ap-south-1' };
 
 
 AWS.config.setPromisesDependency(require('bluebird'));
@@ -48,8 +50,14 @@ module.exports.deployContract = (event, context, callback) => {
 
 async function deployContract(loanInfo,blockCounter) {
 
+    const Blockchain_Provider = awsParamStore.getParameterSync( 'BLOCKCHAIN_RPC_PROVIDER',region).Value
+    const Blockchain_ID = awsParamStore.getParameterSync( 'BLOCKCHAIN_ID',region).Value
+    const contractOwner = awsParamStore.getParameterSync( 'BLOCKCHAIN_CONTRACT_OWNER',region).Value
+    const privateKey = awsParamStore.getParameterSync( 'BLOCKCHAIN_CONTRACT_PK',region).Value
 
-    var web3 = new Web3(new Web3.providers.HttpProvider('https://block.cognitochain.io'))
+
+    var web3 = new Web3(new Web3.providers.HttpProvider(Blockchain_Provider))
+
 
     var input = {
         language: 'Solidity',
@@ -77,14 +85,9 @@ async function deployContract(loanInfo,blockCounter) {
         data: '0x' + byteCode,
         arguments: [loanInfo.amount,loanInfo.loanID]
     }).encodeABI()
-
-
-
-    const contractOwner = '0xebd57657a9e8c064a58CF4BEC4c4Ad84De2A8632'
-    const privateKey = '0xa51bb5601d61c924e0d6167ffa8d0acce6d599afa3f3b64563ab809276931aa3'
-
+    
     const tx = {
-        chainId: 15092020,
+        chainId: Blockchain_ID,
         nonce: await web3.utils.toHex((await web3.eth.getTransactionCount(contractOwner))+blockCounter),
         gas: web3.utils.toHex(7000000),
         from: contractOwner,
