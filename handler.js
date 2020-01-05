@@ -21,7 +21,7 @@ module.exports.deployContract = (event, context, callback) => {
     try {
         event.Records.forEach((record) => {
             console.log('Stream record: ', JSON.stringify(record, null, 2));
-            var record = JSON.parse(fs.readFileSync('./mocks/dynamo-modify-mock.json', 'utf8'))
+            // var record = JSON.parse(fs.readFileSync('./mocks/dynamo-modify-mock.json', 'utf8'))
             const unmarshalledNewData = AWS.DynamoDB.Converter.unmarshall(record.dynamodb.NewImage)
             const unmarshalledOldData = AWS.DynamoDB.Converter.unmarshall(record.dynamodb.OldImage)
             if (record.eventName == 'INSERT') {
@@ -30,8 +30,7 @@ module.exports.deployContract = (event, context, callback) => {
                 blockCounter++
             } else if (record.eventName == 'MODIFY') {
                 if (unmarshalledOldData.loanID === unmarshalledNewData.loanID && unmarshalledOldData.amount === unmarshalledNewData.amount) {
-                    console.log(unmarshalledOldData.contractAddress)
-                    if(unmarshalledOldData.contractAddress === undefined){
+                    if(unmarshalledNewData.contractAddress === undefined){
                       if (unmarshalledOldData.contractAddress === undefined) {
                         console.log('Deploying New contract for Loan: ' + unmarshalledOldData.loanID)
                         deployContract(unmarshalledNewData, blockCounter)
