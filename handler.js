@@ -6,6 +6,7 @@ const S3 = new AWS.S3()
 var fs = require("fs")
 const awsParamStore = require( 'aws-param-store' );
 const region = { region: 'ap-south-1' };
+const dbConfig = require('./config/db');
 
 
 AWS.config.setPromisesDependency(require('bluebird'));
@@ -18,16 +19,30 @@ module.exports.deployContract = (event, context, callback) => {
   try{
     event.Records.forEach((record) => {
       console.log('Stream record: ', JSON.stringify(record, null, 2));
-      // var record = JSON.parse(fs.readFileSync('./mocks/dynamo-mock.json', 'utf8'))
+       var record = JSON.parse(fs.readFileSync('./mocks/dynamo-modify-mock.json', 'utf8'))
+      const unmarshalledNewData = AWS.DynamoDB.Converter.unmarshall(record.dynamodb.NewImage)
+      const unmarshalledOldData = AWS.DynamoDB.Converter.unmarshall(record.dynamodb.OldImage)
       if (record.eventName == 'INSERT') {
-          const unmarshalledData = AWS.DynamoDB.Converter.unmarshall(record.dynamodb.NewImage)
-          console.log(unmarshalledData.contractAddress)
-          if(unmarshalledData.contractAddress === undefined){
-            deployContract(unmarshalledData,blockCounter)
+            console.log('deployContract')
+            deployContract(unmarshalledNewData,blockCounter)
             blockCounter++
-          }else{
-            console.warn(`Contract already exists for the loan :${unmarshalledData.loanID} `)
+      }
+      else if (record.eventName == 'MODIFY') {
+        if(unmarshalledOldData.loanID === unmarshalledNewData.loanID && unmarshalledOldData.amount === unmarshalledNewData.amount){
+          console.log(unmarshalledOldData.contractAddress)
+          if(unmarshalledOldData.contractAddress === undefined){
+            console.log('Deploying New contract for Loan: '+ unmarshalledOldData.loanID)
+            deployContract(unmarshalledNewData,blockCounter)
           }
+          else {
+            console.log('update same contract address: ' + unmarshalledOldData.contractAddress )
+            updateContractAddress(unmarshalledOldData,unmarshalledOldData.contractAddress)
+          }
+          
+
+        }else{
+          console.warn(`Loan info updated :: Old Loan:${JSON.stringify(unmarshalledOldData)} , New Loan info : ${JSON.stringify(unmarshalledNewData)}  `)
+        }
       }
    })
   }
@@ -103,15 +118,25 @@ async function deployContract(loanInfo,blockCounter) {
 
     console.info(receipt)
 
-  loanInfo.contractAddres = receipt.contractAddress
+  updateContractAddress(loanInfo,receipt.contractAddress)
+}
 
-  const putContractAddress = {
-    Item: loanInfo,
-    ReturnConsumedCapacity: 'TOTAL',
-    TableName: 'loan-info-dev'
-  }
-  
-  const result = await dynamoDb.put(putContractAddress).promise()
 
-  console.log(result);
+
+
+async function updateContractAddress(loanInfo,constractAddress) {
+
+loanInfo.contractAddress = constractAddress
+
+const putContractAddress = {
+  Item: loanInfo,
+  ReturnConsumedCapacity: 'TOTAL',
+  TableName: process.env.LOAN_TABLE
+}
+
+console.log(JSON.stringify(putContractAddress))
+
+const result = await dynamoDb.put(putContractAddress).promise()
+
+console.log(result);
 }
