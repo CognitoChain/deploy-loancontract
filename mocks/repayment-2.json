@@ -1,0 +1,94 @@
+{
+  "eventID": "e61662fa6a511af479587a67af2bd768",
+  "eventName": "MODIFY",
+  "eventVersion": "1.1",
+  "eventSource": "aws:dynamodb",
+  "awsRegion": "ap-south-1",
+  "dynamodb": {
+    "ApproximateCreationDateTime": 1578273004,
+    "Keys": {
+      "loanID": {
+        "S": "18190404401510"
+      }
+    },
+    "NewImage": {
+      "amount": {
+        "N": "25000"
+      },
+      "shgID": {
+        "S": "022403010060121001"
+      },
+      "contractAddress": {
+        "S": "0x6CAdE563954Af65873dC2eBF32b25dFCCB9cB5eB"
+      },
+      "disbursementDate": {
+        "S": "3/18/2019 12:00:00 AM"
+      },
+      "demandGenerationData": {
+        "S": "4/28/2019 12:00:00 AM"
+      },
+      "loanID": {
+        "S": "18190404401510"
+      },
+      "repayments": {
+        "M": {
+          "6/25/2019 12:00:00 AM": {
+            "M": {
+              "amount": {
+                "S": "1212"
+              }
+            }
+          },
+          "5/25/2019 12:00:00 AM": {
+            "M": {
+              "amount": {
+                "S": "1212"
+              }
+            }
+          }
+        }
+      },
+      "memberID": {
+        "S": "02240301006012100109"
+      }
+    },
+    "OldImage": {
+      "amount": {
+        "N": "25000"
+      },
+      "shgID": {
+        "S": "022403010060121001"
+      },
+      "contractAddress": {
+        "S": "0x6CAdE563954Af65873dC2eBF32b25dFCCB9cB5eB"
+      },
+      "disbursementDate": {
+        "S": "3/18/2019 12:00:00 AM"
+      },
+      "demandGenerationData": {
+        "S": "4/28/2019 12:00:00 AM"
+      },
+      "loanID": {
+        "S": "18190404401510"
+      },
+      "repayments": {
+        "M": {
+          "6/25/2019 12:00:00 AM": {
+            "M": {
+              "amount": {
+                "S": "1212"
+              }
+            }
+          }
+        }
+      },
+      "memberID": {
+        "S": "02240301006012100109"
+      }
+    },
+    "SequenceNumber": "37218000000000005922402529",
+    "SizeBytes": 584,
+    "StreamViewType": "NEW_AND_OLD_IMAGES"
+  },
+  "eventSourceARN": "arn:aws:dynamodb:ap-south-1:529566628646:table/loan-info-dev/stream/2019-12-29T02:08:57.253"
+}

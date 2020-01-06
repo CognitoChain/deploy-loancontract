@@ -9,11 +9,18 @@ const region = {
     region: 'ap-south-1'
 };
 const dbConfig = require('./config/db');
+const dynamoStreamDiff = require('dynamo-stream-diff')
 
 
 AWS.config.setPromisesDependency(require('bluebird'));
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
+const Blockchain_Provider = awsParamStore.getParameterSync('BLOCKCHAIN_RPC_PROVIDER', region).Value
+const Blockchain_ID = awsParamStore.getParameterSync('BLOCKCHAIN_ID', region).Value
+const contractOwner = awsParamStore.getParameterSync('BLOCKCHAIN_CONTRACT_OWNER', region).Value
+const privateKey = awsParamStore.getParameterSync('BLOCKCHAIN_CONTRACT_PK', region).Value
+const web3 = new Web3(new Web3.providers.HttpProvider(Blockchain_Provider))
+
 
 module.exports.deployContract = (event, context, callback) => {
 
@@ -21,7 +28,8 @@ module.exports.deployContract = (event, context, callback) => {
     try {
         event.Records.forEach((record) => {
             console.log('Stream record: ', JSON.stringify(record, null, 2));
-            // var record = JSON.parse(fs.readFileSync('./mocks/dynamo-modify-mock.json', 'utf8'))
+            // var record = JSON.parse(fs.readFileSync('./mocks/repayment-2.json', 'utf8'))
+            let diff = dynamoStreamDiff(record)
             const unmarshalledNewData = AWS.DynamoDB.Converter.unmarshall(record.dynamodb.NewImage)
             const unmarshalledOldData = AWS.DynamoDB.Converter.unmarshall(record.dynamodb.OldImage)
             if (record.eventName == 'INSERT') {
@@ -39,8 +47,16 @@ module.exports.deployContract = (event, context, callback) => {
                         updateContractAddress(unmarshalledOldData, unmarshalledOldData.contractAddress)
                       }
                     }
+                    else{
+                      diff.diffList.forEach(element => {
+                        if(element.path.includes('repayments') &&  (element.diff === 'created')) {
+                          console.log('Executing repayments transaction : ' + element.path.replace('repayments.',''),element.newVal.amount*1)
+                          executeTransaction( element.path.replace('repayments.',''),element.newVal.amount*1)
+                        }
+                      });
+                    }
                 } else {
-                    console.warn(`Loan info updated :: Old Loan:${JSON.stringify(unmarshalledOldData)} , New Loan info : ${JSON.stringify(unmarshalledNewData)}  `)
+                    console.log(`Loan info updated :: Old Loan:${JSON.stringify(unmarshalledOldData)} , New Loan info : ${JSON.stringify(unmarshalledNewData)}  `)
                 }
             }
         })
@@ -62,15 +78,6 @@ module.exports.deployContract = (event, context, callback) => {
 
 
 async function deployContract(loanInfo, blockCounter) {
-
-    const Blockchain_Provider = awsParamStore.getParameterSync('BLOCKCHAIN_RPC_PROVIDER', region).Value
-    const Blockchain_ID = awsParamStore.getParameterSync('BLOCKCHAIN_ID', region).Value
-    const contractOwner = awsParamStore.getParameterSync('BLOCKCHAIN_CONTRACT_OWNER', region).Value
-    const privateKey = awsParamStore.getParameterSync('BLOCKCHAIN_CONTRACT_PK', region).Value
-
-
-    var web3 = new Web3(new Web3.providers.HttpProvider(Blockchain_Provider))
-
 
     var input = {
         language: 'Solidity',
@@ -120,6 +127,11 @@ async function deployContract(loanInfo, blockCounter) {
 }
 
 
+
+
+async function executeTransaction(repaymentDate, repaymentAmount) {
+  console.log(repaymentDate,repaymentAmount);
+}
 
 
 async function updateContractAddress(loanInfo, constractAddress) {
