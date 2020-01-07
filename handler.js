@@ -21,10 +21,9 @@ const contractOwner = awsParamStore.getParameterSync('BLOCKCHAIN_CONTRACT_OWNER'
 const privateKey = awsParamStore.getParameterSync('BLOCKCHAIN_CONTRACT_PK', region).Value
 const web3 = new Web3(new Web3.providers.HttpProvider(Blockchain_Provider))
 
-    var blockCounter = 0;
 
 module.exports.deployContract = (event, context, callback) => {
-
+  var blockCounter = 0;
     try {
         event.Records.forEach((record) => {
             console.log('Stream record: ', JSON.stringify(record, null, 2));
@@ -51,7 +50,7 @@ module.exports.deployContract = (event, context, callback) => {
                         console.log(element)
                         if(element.path.includes('repayments') &&  (element.diff === 'created')) {
                           console.log('Executing repayments transaction : ' + element.path.replace('repayments.',''),element.newVal.amount*1)
-                          executeTransaction( unmarshalledNewData.loanID,unmarshalledNewData.contractAddress, element.path.replace('repayments.',''),element.newVal.amount*1)
+                          executeTransaction( unmarshalledNewData.loanID,unmarshalledNewData.contractAddress, element.path.replace('repayments.',''),element.newVal.amount*1,blockCounter)
                         }
                       });
                     }
@@ -130,7 +129,7 @@ async function deployContract(loanInfo, blockCounter) {
 
 
 
-async function executeTransaction(loanID, constractAddress, repaymentDate, repaymentAmount) {
+async function executeTransaction(loanID, constractAddress, repaymentDate, repaymentAmount,blockCounter) {
   var input = {
     language: 'Solidity',
     sources: {
@@ -177,6 +176,7 @@ if (RegisteredloanID === loanID){
     const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey)
     const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction)
     blockCounter++
+    console.log(blockCounter)
     console.log(receipt)
   } else{
     console.log(`ERROR: Specified loan id is : ${loanID} but recieved ${RegisteredloanID} from  contract address: ${constractAddress} `)
