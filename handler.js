@@ -33,6 +33,7 @@ module.exports.deployContract = (event, context, callback) => {
             if (record.eventName == 'INSERT') {
                 console.log('deployContract')
                 deployContract(unmarshalledNewData, blockCounter)
+                blockCounter++
             } else if (record.eventName == 'MODIFY') {
                 if (unmarshalledOldData.loanID === unmarshalledNewData.loanID && unmarshalledOldData.amount === unmarshalledNewData.amount) {
                     if(unmarshalledNewData.contractAddress === undefined){
