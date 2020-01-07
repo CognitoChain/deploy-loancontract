@@ -213,7 +213,7 @@ async function updateContractAddress(loanInfo, constractAddress) {
 
     const putContractAddress = {
         Item: loanInfo,
-        ReturnValues: "UPDATED_NEW",
+        ReturnValues: "ALL_OLD",
         TableName: process.env.LOAN_TABLE
     }
 
