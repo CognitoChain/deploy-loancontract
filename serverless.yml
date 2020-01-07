@@ -50,7 +50,6 @@ functions:
   deployContract:
     handler: handler.deployContract
     timeout: 45
-     # The `events` block defines how to trigger the handler.helloWorld code
     events:
       - http:
           path: deploy-contract
@@ -62,3 +61,14 @@ functions:
           arn: arn:aws:dynamodb:ap-south-1:529566628646:table/loan-info-dev/stream/2019-12-29T02:08:57.253
           maximumRetryAttempts: 2
           startingPosition: LATEST
+  loanContractInfo:
+    handler: handler.loanContractInfo
+    timeout: 30
+    events:
+      - http:
+          path: loan-contract-info
+          method: get
+          cors: true
+          parameters:
+            querystrings:
+              loanID: true

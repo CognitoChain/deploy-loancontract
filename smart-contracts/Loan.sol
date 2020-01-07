@@ -1,3 +1,5 @@
+pragma experimental ABIEncoderV2;
+
 pragma solidity ^0.6.0;
 
 contract loan {
@@ -35,4 +37,8 @@ contract loan {
             repayments.push(Repayment({date: date,amount: amount}));
             emit RepaymentEvent(amount, address(this));
         }
+        
+    function getRepayments() public view returns (Repayment[] memory){
+       return repayments;
+    }
 }

@@ -8,7 +8,7 @@
       "ApproximateCreationDateTime": 1578272561,
       "Keys": {
         "loanID": {
-          "S": "18190404401510"
+          "S": "18190102400749"
         }
       },
       "NewImage": {
@@ -19,7 +19,7 @@
           "S": "022403010060121001"
         },
         "contractAddress": {
-          "S": "0x6CAdE563954Af65873dC2eBF32b25dFCCB9cB5eB"
+          "S": "0x66d41F742E349BD4c1f1926f3192771b4a0664b9"
         },
         "disbursementDate": {
           "S": "3/18/2019 12:00:00 AM"
@@ -28,7 +28,7 @@
           "S": "4/28/2019 12:00:00 AM"
         },
         "loanID": {
-          "S": "18190404401510"
+          "S": "18190102400749"
         },
         "repayments": {
           "M": {
@@ -53,7 +53,7 @@
           "S": "022403010060121001"
         },
         "contractAddress": {
-          "S": "0x6CAdE563954Af65873dC2eBF32b25dFCCB9cB5eB"
+          "S": "0x66d41F742E349BD4c1f1926f3192771b4a0664b9"
         },
         "disbursementDate": {
           "S": "3/18/2019 12:00:00 AM"
@@ -62,7 +62,7 @@
           "S": "4/28/2019 12:00:00 AM"
         },
         "loanID": {
-          "S": "18190404401510"
+          "S": "18190102400749"
         },
         "repayments": {
           "M": {}
