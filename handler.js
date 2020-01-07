@@ -52,7 +52,7 @@ module.exports.deployContract = (event, context, callback) => {
                       const diff = dynamoStreamDiff(record).diffList
                       diff.forEach(element => {
                         console.log(element)
-                        if(element.path.includes('repayments') &&  (element.diff === 'created')) {
+                        if(element.path.includes('repayments') &&  (element.diff === 'created') && element.newVal) {
                           console.log('Executing repayments transaction : ' + element.path.replace('repayments.',''),element.newVal.amount*1)
                           executeTransaction( unmarshalledNewData.loanID,unmarshalledNewData.contractAddress, element.path.replace('repayments.',''),element.newVal.amount*1,blockCounter)
                           blockCounter++
