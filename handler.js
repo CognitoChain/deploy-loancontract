@@ -59,7 +59,7 @@ module.exports.deployContract = (event, context, callback) => {
                           executeTransaction( unmarshalledNewData.loanID,unmarshalledNewData.contractAddress,repaymentDate, repaymentAmount,blockCounter)
                           blockCounter++
                         } else if(element.path.includes('transactionHash')){
-                          console.log(`Transaction hash already exists for the repayment with amount: ${repaymentAmount} and date : ${repaymentDate}`)
+                          console.log(`Transaction hash already exists : ${element.newVal} for the repayment`)
                         }
                       });
                     }
