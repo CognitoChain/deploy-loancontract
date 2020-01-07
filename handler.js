@@ -39,9 +39,12 @@ module.exports.deployContract = (event, context, callback) => {
                       if (unmarshalledOldData.contractAddress === undefined) {
                         console.log('Deploying New contract for Loan: ' + unmarshalledOldData.loanID)
                         deployContract(unmarshalledNewData, blockCounter)
+                        blockCounter++
                       } else {
                         console.log('update same contract address: ' + unmarshalledOldData.contractAddress)
                         updateContractAddress(unmarshalledOldData, unmarshalledOldData.contractAddress)
+                        blockCounter++
+
                       }
                     }
                     else{
@@ -51,6 +54,7 @@ module.exports.deployContract = (event, context, callback) => {
                         if(element.path.includes('repayments') &&  (element.diff === 'created')) {
                           console.log('Executing repayments transaction : ' + element.path.replace('repayments.',''),element.newVal.amount*1)
                           executeTransaction( unmarshalledNewData.loanID,unmarshalledNewData.contractAddress, element.path.replace('repayments.',''),element.newVal.amount*1,blockCounter)
+                          blockCounter++
                         }
                       });
                     }
@@ -122,7 +126,6 @@ async function deployContract(loanInfo, blockCounter) {
     const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction)
 
     console.info(receipt)
-    blockCounter++
     updateContractAddress(loanInfo, receipt.contractAddress)
 }
 
@@ -175,8 +178,6 @@ if (RegisteredloanID === loanID){
     }
     const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey)
     const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction)
-    blockCounter++
-    console.log(blockCounter)
     console.log(receipt)
   } else{
     console.log(`ERROR: Specified loan id is : ${loanID} but recieved ${RegisteredloanID} from  contract address: ${constractAddress} `)
