@@ -52,9 +52,11 @@ module.exports.deployContract = (event, context, callback) => {
                       const diff = dynamoStreamDiff(record).diffList
                       diff.forEach(element => {
                         console.log(element)
-                        if(element.path.includes('repayments') &&  (element.diff === 'created') && element.newVal) {
-                          console.log('Executing repayments transaction : ' + element.path.replace('repayments.',''),element.newVal.amount*1)
-                          executeTransaction( unmarshalledNewData.loanID,unmarshalledNewData.contractAddress, element.path.replace('repayments.',''),element.newVal.amount*1,blockCounter)
+                        if(element.path.includes('repayments.') &&  (element.diff === 'created') && element.newVal) {
+                          const repaymentDate = element.path.replace('repayments.','')
+                          const repaymentAmount = element.newVal.amount*1
+                          console.log(`Executing repayments transaction with amount: ${repaymentDate} and date : ${repaymentAmount}`)
+                          executeTransaction( unmarshalledNewData.loanID,unmarshalledNewData.contractAddress, repaymentAmount,blockCounter)
                           blockCounter++
                         }
                       });
@@ -180,6 +182,7 @@ if (RegisteredloanID === loanID){
     const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey)
     const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction)
     console.log(receipt)
+    updateRepaymentTransaction(RegisteredloanID,repaymentDate, repaymentAmount,receipt.transactionHash)
   } else{
     console.log(`ERROR: Specified loan id is : ${loanID} but recieved ${RegisteredloanID} from  contract address: ${constractAddress} `)
   }
@@ -210,7 +213,7 @@ async function updateContractAddress(loanInfo, constractAddress) {
 
     const putContractAddress = {
         Item: loanInfo,
-        ReturnConsumedCapacity: 'TOTAL',
+        ReturnValues: "UPDATED_NEW",
         TableName: process.env.LOAN_TABLE
     }
 
@@ -219,4 +222,28 @@ async function updateContractAddress(loanInfo, constractAddress) {
     const result = await dynamoDb.put(putContractAddress).promise()
 
     console.log(result);
+}
+
+async function updateRepaymentTransaction(loanID,repaymentDate,repaymentAmount,transactionHash) {
+        var loanInfo = {
+          TableName: process.env.LOAN_TABLE,
+          Key: {
+              "loanID": loanID
+          },
+          UpdateExpression: 'set #c.#date = if_not_exists( #c.#date, :vals)',
+          ConditionExpression: "attribute_not_exists(#c.#date)",
+          ExpressionAttributeNames: {
+              "#c": "repayments",
+              "#date": repaymentDate
+          },
+          ExpressionAttributeValues: {
+              ":vals": {transactionHash: transactionHash}
+          },  
+          ReturnValues: "UPDATED_NEW"
+      }
+      try{
+          await dynamoDb.update(loanInfo).promise()
+      }catch(e){
+          console.log(e)
+      }
 }
