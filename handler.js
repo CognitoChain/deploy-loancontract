@@ -52,12 +52,14 @@ module.exports.deployContract = (event, context, callback) => {
                       const diff = dynamoStreamDiff(record).diffList
                       diff.forEach(element => {
                         console.log(element)
-                        if(element.path.includes('repayments.') &&  (element.diff === 'created') && element.newVal) {
+                        if(element.path.includes('repayments.') &&  (element.diff === 'created') && element.newVal && !(element.path.includes('transactionHash')) ) {
                           const repaymentDate = element.path.replace('repayments.','')
                           const repaymentAmount = element.newVal.amount*1
                           console.log(`Executing repayments transaction with amount: ${repaymentAmount} and date : ${repaymentDate}`)
                           executeTransaction( unmarshalledNewData.loanID,unmarshalledNewData.contractAddress,repaymentDate, repaymentAmount,blockCounter)
                           blockCounter++
+                        } else if(element.path.includes('transactionHash')){
+                          console.log(`Transaction hash already exists for the repayment with amount: ${repaymentAmount} and date : ${repaymentDate}`)
                         }
                       });
                     }
@@ -236,7 +238,7 @@ async function updateRepaymentTransaction(loanID,repaymentDate,repaymentAmount,t
               "#date": repaymentDate
           },
           ExpressionAttributeValues: {
-              ":vals": {transactionHash: transactionHash}
+              ":vals": {amount: repaymentAmount , transactionHash: transactionHash}
           },  
           ReturnValues: "UPDATED_NEW"
       }
