@@ -34,6 +34,7 @@ provider:
         - "s3:*"
         - dynamodb:Query
         - dynamodb:Scan
+        - dynamodb:UpdateItem
         - dynamodb:GetItem
         - dynamodb:PutItem
         - dynamodb:Put
