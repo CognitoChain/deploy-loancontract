@@ -55,8 +55,8 @@ module.exports.deployContract = (event, context, callback) => {
                         if(element.path.includes('repayments.') &&  (element.diff === 'created') && element.newVal) {
                           const repaymentDate = element.path.replace('repayments.','')
                           const repaymentAmount = element.newVal.amount*1
-                          console.log(`Executing repayments transaction with amount: ${repaymentDate} and date : ${repaymentAmount}`)
-                          executeTransaction( unmarshalledNewData.loanID,unmarshalledNewData.contractAddress, repaymentAmount,blockCounter)
+                          console.log(`Executing repayments transaction with amount: ${repaymentAmount} and date : ${repaymentDate}`)
+                          executeTransaction( unmarshalledNewData.loanID,unmarshalledNewData.contractAddress,repaymentDate, repaymentAmount,blockCounter)
                           blockCounter++
                         }
                       });
