@@ -225,12 +225,12 @@ async function updateContractAddress(loanInfo, constractAddress) {
 }
 
 async function updateRepaymentTransaction(loanID,repaymentDate,repaymentAmount,transactionHash) {
-        var loanInfo = {
+        var repaymentTransaction = {
           TableName: process.env.LOAN_TABLE,
           Key: {
               "loanID": loanID
           },
-          UpdateExpression: 'set #c.#date = if_not_exists( #c.#date, :vals)',
+          UpdateExpression: 'set #c.#date = :vals',
           ExpressionAttributeNames: {
               "#c": "repayments",
               "#date": repaymentDate
@@ -241,7 +241,9 @@ async function updateRepaymentTransaction(loanID,repaymentDate,repaymentAmount,t
           ReturnValues: "UPDATED_NEW"
       }
       try{
-          await dynamoDb.update(loanInfo).promise()
+        console.log(JSON.stringify(repaymentTransaction))
+        const result = await dynamoDb.update(repaymentTransaction).promise()
+        console.log(result);
       }catch(e){
           console.log(e)
       }
