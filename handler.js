@@ -231,7 +231,6 @@ async function updateRepaymentTransaction(loanID,repaymentDate,repaymentAmount,t
               "loanID": loanID
           },
           UpdateExpression: 'set #c.#date = if_not_exists( #c.#date, :vals)',
-          ConditionExpression: "attribute_not_exists(#c.#date)",
           ExpressionAttributeNames: {
               "#c": "repayments",
               "#date": repaymentDate
