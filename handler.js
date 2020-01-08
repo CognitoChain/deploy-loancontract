@@ -24,27 +24,34 @@ const web3 = new Web3(new Web3.providers.HttpProvider(Blockchain_Provider))
 
 module.exports.loanContractInfo = async (event, context, callback) => {
 
-  // console.log(JSON.stringify(event))
-   event = JSON.parse(fs.readFileSync('./mocks/loan-info-id-event.json', 'utf8'));
-  var results
+  console.log(JSON.stringify(event))
+  //  event = JSON.parse(fs.readFileSync('./mocks/loan-info-id-event.json', 'utf8'));
   try {
-       results = await getItemFromLoanTable(event.queryStringParameters.loanID)
+       const results = await getItemFromLoanTable(event.queryStringParameters.loanID)
        console.log('Loan info for the query ' + event.queryStringParameters.loanID + ' ::' + JSON.stringify(results))
-
+       var response = {
+        "statusCode": 200,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "body": results,
+        "isBase64Encoded": false
+    };
+    callback(null, response);
   } catch (err) {
       console.log('Error featching loan info for the query ' + event.queryStringParameters + ' :: error ' + err)
-      callback(null, 'Loan does not exists');
+      var errResponse = {
+        "statusCode": 404,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "body": ({err: "Loan does not exists"}),
+        "isBase64Encoded": false
+    };
+      callback(null, errResponse);
   }
 
-  var response = {
-      "statusCode": 200,
-      "headers": {
-          "Content-Type": "application/json"
-      },
-      "body": results,
-      "isBase64Encoded": false
-  };
-  callback(null, response);
+  
 }
 
 module.exports.deployContract = (event, context, callback) => {
