@@ -5,7 +5,7 @@
   "main": "handler.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha **/*.spec.js",
-    "run": "SLS_DEBUG=* serverless invoke local --function deployContract"
+    "run": "SLS_DEBUG=* serverless invoke local --function loanContractInfo"
   },
   "repository": {
     "type": "git",

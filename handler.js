@@ -22,8 +22,26 @@ const privateKey = awsParamStore.getParameterSync('BLOCKCHAIN_CONTRACT_PK', regi
 const web3 = new Web3(new Web3.providers.HttpProvider(Blockchain_Provider))
 
 
+module.exports.loanContractInfo = async (event, context, callback) => {
+
+  // console.log(JSON.stringify(event))
+   event = JSON.parse(fs.readFileSync('./mocks/loan-info-id-event.json', 'utf8'));
+  try {
+      const results = await getItemFromLoanTable(event.queryStringParameters.loanID)
+
+      return {
+          statusCode: 200,
+          body: results
+      };
+  } catch (err) {
+      console.log('Error featching loan info for the query ' + event.queryStringParameters + ' :: error ' + err)
+      callback(null, 'Loan does not exists');
+  }
+
+}
+
 module.exports.deployContract = (event, context, callback) => {
-  var blockCounter = 0;
+    var blockCounter = 0;
     try {
         event.Records.forEach((record) => {
             console.log('Stream record: ', JSON.stringify(record, null, 2));
@@ -36,32 +54,31 @@ module.exports.deployContract = (event, context, callback) => {
                 blockCounter++
             } else if (record.eventName == 'MODIFY') {
                 if (unmarshalledOldData.loanID === unmarshalledNewData.loanID && unmarshalledOldData.amount === unmarshalledNewData.amount) {
-                    if(unmarshalledNewData.contractAddress === undefined){
-                      if (unmarshalledOldData.contractAddress === undefined) {
-                        console.log('Deploying New contract for Loan: ' + unmarshalledOldData.loanID)
-                        deployContract(unmarshalledNewData, blockCounter)
-                        blockCounter++
-                      } else {
-                        console.log('update same contract address: ' + unmarshalledOldData.contractAddress)
-                        updateContractAddress(unmarshalledOldData, unmarshalledOldData.contractAddress)
-                        blockCounter++
+                    if (unmarshalledNewData.contractAddress === undefined) {
+                        if (unmarshalledOldData.contractAddress === undefined) {
+                            console.log('Deploying New contract for Loan: ' + unmarshalledOldData.loanID)
+                            deployContract(unmarshalledNewData, blockCounter)
+                            blockCounter++
+                        } else {
+                            console.log('update same contract address: ' + unmarshalledOldData.contractAddress)
+                            updateContractAddress(unmarshalledOldData, unmarshalledOldData.contractAddress)
+                            blockCounter++
 
-                      }
-                    }
-                    else{
-                      const diff = dynamoStreamDiff(record).diffList
-                      diff.forEach(element => {
-                        console.log(element)
-                        if(element.path.includes('repayments.') &&  (element.diff === 'created') && element.newVal && !(element.path.includes('transactionHash')) ) {
-                          const repaymentDate = element.path.replace('repayments.','')
-                          const repaymentAmount = element.newVal.amount*1
-                          console.log(`Executing repayments transaction with amount: ${repaymentAmount} and date : ${repaymentDate}`)
-                          executeTransaction( unmarshalledNewData.loanID,unmarshalledNewData.contractAddress,repaymentDate, repaymentAmount,blockCounter)
-                          blockCounter++
-                        } else if(element.path.includes('transactionHash')){
-                          console.log(`Transaction hash already exists : ${element.newVal} for the repayment`)
                         }
-                      });
+                    } else {
+                        const diff = dynamoStreamDiff(record).diffList
+                        diff.forEach(element => {
+                            console.log(element)
+                            if (element.path.includes('repayments.') && (element.diff === 'created') && element.newVal && !(element.path.includes('transactionHash'))) {
+                                const repaymentDate = element.path.replace('repayments.', '')
+                                const repaymentAmount = element.newVal.amount * 1
+                                console.log(`Executing repayments transaction with amount: ${repaymentAmount} and date : ${repaymentDate}`)
+                                executeTransaction(unmarshalledNewData.loanID, unmarshalledNewData.contractAddress, repaymentDate, repaymentAmount, blockCounter)
+                                blockCounter++
+                            } else if (element.path.includes('transactionHash')) {
+                                console.log(`Transaction hash already exists : ${element.newVal} for the repayment`)
+                            }
+                        });
                     }
                 } else {
                     console.log(`Loan info updated :: Old Loan:${JSON.stringify(unmarshalledOldData)} , New Loan info : ${JSON.stringify(unmarshalledNewData)}  `)
@@ -137,74 +154,64 @@ async function deployContract(loanInfo, blockCounter) {
 
 
 
-async function executeTransaction(loanID, constractAddress, repaymentDate, repaymentAmount,blockCounter) {
-  var input = {
-    language: 'Solidity',
-    sources: {
-        'loan': {
-            content: fs.readFileSync('./smart-contracts/Loan.sol', 'utf8')
-        }
-    },
-    settings: {
-        evmVersion: "byzantium",
-        outputSelection: {
-            "*": {
-                "*": ["abi", "evm.bytecode"]
+async function executeTransaction(loanID, constractAddress, repaymentDate, repaymentAmount, blockCounter) {
+    var input = {
+        language: 'Solidity',
+        sources: {
+            'loan': {
+                content: fs.readFileSync('./smart-contracts/Loan.sol', 'utf8')
+            }
+        },
+        settings: {
+            evmVersion: "byzantium",
+            outputSelection: {
+                "*": {
+                    "*": ["abi", "evm.bytecode"]
+                }
             }
         }
     }
-}
 
 
-var compiledCode = JSON.parse(solc.compile(JSON.stringify(input)));
+    var compiledCode = JSON.parse(solc.compile(JSON.stringify(input)));
 
-var contractABI = new web3.eth.Contract(compiledCode.contracts['loan'].loan.abi);
+    var contractABI = new web3.eth.Contract(compiledCode.contracts['loan'].loan.abi);
 
-const loanContract = new web3.eth.Contract( contractABI._jsonInterface, constractAddress)
+    const loanContract = new web3.eth.Contract(contractABI._jsonInterface, constractAddress)
 
-const repayments = await loanContract.methods.getRepayments().call()
-const RegisteredloanID = await loanContract.methods.loanID().call()
+    const repayments = await loanContract.methods.getRepayments().call()
+    const RegisteredloanID = await loanContract.methods.loanID().call()
 
-for (var i = 0; i < repayments.length; i++) {
-  if (repayments[i].includes(repaymentDate)) {
-    console.log(`WARNING: Repayment: ${repayments[i]} : already exists for the loan : ${loanID} at contract address: ${constractAddress}`)
-    return 
-  }
-}
-if (RegisteredloanID === loanID){
-  const tx = {
-      from: contractOwner,
-      gas: web3.utils.toHex(7000000),
-      gasPrice: Math.floor(parseInt(await web3.eth.getGasPrice()) * 1.05),
-      value:'0x0',
-      to: loanContract._address,
-      data: loanContract.methods.makeRepayment(repaymentDate,repaymentAmount).encodeABI(),
-      nonce: await web3.utils.toHex((await web3.eth.getTransactionCount(contractOwner)) + blockCounter)
+    for (var i = 0; i < repayments.length; i++) {
+        if (repayments[i].includes(repaymentDate)) {
+            console.log(`WARNING: Repayment: ${repayments[i]} : already exists for the loan : ${loanID} at contract address: ${constractAddress}`)
+            return
+        }
     }
-    const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey)
-    const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction)
-    console.log(receipt)
-    updateRepaymentTransaction(RegisteredloanID,repaymentDate, repaymentAmount,receipt.transactionHash)
-  } else{
-    console.log(`ERROR: Specified loan id is : ${loanID} but recieved ${RegisteredloanID} from  contract address: ${constractAddress} `)
-  }
-  
+    if (RegisteredloanID === loanID) {
+        const tx = {
+            from: contractOwner,
+            gas: web3.utils.toHex(7000000),
+            gasPrice: Math.floor(parseInt(await web3.eth.getGasPrice()) * 1.05),
+            value: '0x0',
+            to: loanContract._address,
+            data: loanContract.methods.makeRepayment(repaymentDate, repaymentAmount).encodeABI(),
+            nonce: await web3.utils.toHex((await web3.eth.getTransactionCount(contractOwner)) + blockCounter)
+        }
+        const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey)
+        const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction)
+        console.log(receipt)
+        updateRepaymentTransaction(RegisteredloanID, repaymentDate, repaymentAmount, receipt.transactionHash)
+    } else {
+        console.log(`ERROR: Specified loan id is : ${loanID} but recieved ${RegisteredloanID} from  contract address: ${constractAddress} `)
+    }
+
 }
 
-
-module.exports.loanContractInfo = (event, context, callback) => {
-
-console.log(JSON.stringify(event))
-
-// access loan table and get contract address for the ID
-// get details from blockchain and send it as response
-
-}
-
-function getRandomInt (min, max) {
-  min = Math.ceil(min)
-  max = Math.floor(max)
-  return Math.floor(Math.random() * (max - min)) + min
+function getRandomInt(min, max) {
+    min = Math.ceil(min)
+    max = Math.floor(max)
+    return Math.floor(Math.random() * (max - min)) + min
 }
 
 
@@ -226,27 +233,46 @@ async function updateContractAddress(loanInfo, constractAddress) {
     console.log(result);
 }
 
-async function updateRepaymentTransaction(loanID,repaymentDate,repaymentAmount,transactionHash) {
-        var repaymentTransaction = {
-          TableName: process.env.LOAN_TABLE,
-          Key: {
-              "loanID": loanID
-          },
-          UpdateExpression: 'set #c.#date = :vals',
-          ExpressionAttributeNames: {
-              "#c": "repayments",
-              "#date": repaymentDate
-          },
-          ExpressionAttributeValues: {
-              ":vals": {amount: repaymentAmount , transactionHash: transactionHash}
-          },  
-          ReturnValues: "UPDATED_NEW"
-      }
-      try{
+async function updateRepaymentTransaction(loanID, repaymentDate, repaymentAmount, transactionHash) {
+    var repaymentTransaction = {
+        TableName: process.env.LOAN_TABLE,
+        Key: {
+            "loanID": loanID
+        },
+        UpdateExpression: 'set #c.#date = :vals',
+        ExpressionAttributeNames: {
+            "#c": "repayments",
+            "#date": repaymentDate
+        },
+        ExpressionAttributeValues: {
+            ":vals": {
+                amount: repaymentAmount,
+                transactionHash: transactionHash
+            }
+        },
+        ReturnValues: "UPDATED_NEW"
+    }
+    try {
         console.log(JSON.stringify(repaymentTransaction))
         const result = await dynamoDb.update(repaymentTransaction).promise()
         console.log(result);
-      }catch(e){
-          console.log(e)
-      }
+    } catch (e) {
+        console.log(e)
+    }
+}
+
+
+
+async function getItemFromLoanTable(loanID) {
+
+
+    const params = {
+        TableName: process.env.LOAN_TABLE,
+        Key: {
+            "loanID": loanID
+        }
+    }
+
+    return await dynamoDb.get(params).promise()
+
 }
