@@ -24,8 +24,8 @@ const web3 = new Web3(new Web3.providers.HttpProvider(Blockchain_Provider))
 
 module.exports.loanContractInfo = async (event, context, callback) => {
 
-  // console.log(JSON.stringify(event))
-   event = JSON.parse(fs.readFileSync('./mocks/loan-info-id-event.json', 'utf8'));
+  console.log(JSON.stringify(event))
+  //  event = JSON.parse(fs.readFileSync('./mocks/loan-info-id-event.json', 'utf8'));
   try {
       const results = await getItemFromLoanTable(event.queryStringParameters.loanID)
 
