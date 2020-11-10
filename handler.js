@@ -150,7 +150,7 @@ async function deployContract(loanInfo, blockCounter) {
 
     const tx = {
         chainId: Blockchain_ID,
-        nonce: await web3.utils.toHex((await web3.eth.getTransactionCount(contractOwner)) + blockCounter),
+        nonce: await web3.utils.toHex((await web3.eth.getTransactionCount(contractOwner)) + loanInfo.blockCounter),
         gas: web3.utils.toHex(7000000),
         from: contractOwner,
         data: hexdata
