@@ -60,7 +60,7 @@ functions:
           enabled: true
           type: dynamodb
           arn: arn:aws:dynamodb:ap-south-1:529566628646:table/loan-info-dev/stream/2019-12-29T02:08:57.253
-          maximumRetryAttempts: 2
+          maximumRetryAttempts: 10
           startingPosition: LATEST
   loanContractInfo:
     handler: handler.loanContractInfo
